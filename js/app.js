@@ -1,7 +1,11 @@
 /*
  * Create a list that holds all of your cards
  */
+var cards = document.getElementsByClassName('card');
 
+for(var i = 0; i < cards.length; i++) {
+    cards[i].addEventListener("click", clicked);
+}
 
 /*
  * Display the cards on the page
@@ -25,6 +29,21 @@ function shuffle(array) {
     return array;
 }
 
+function clicked(){
+    if (!this.classList.contains('open')) {
+        showCard();
+    } else {
+        hideCard();
+    }
+}
+
+function showCard() {
+    this.classList.add('open', 'show')
+}
+
+function hideCard() {
+    this.classList.remove('open', 'show')
+}
 
 /*
  * set up the event listener for a card. If a card is clicked:
