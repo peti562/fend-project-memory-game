@@ -37,15 +37,30 @@ function clicked(){
     if (!this.classList.contains('open')) {
         var cardName = this.firstElementChild.getAttribute('class');
         if (!state.openCards.includes(cardName)) {
+            
             this.classList.add('open', 'show');
             addToOpenCards(cardName);
+            checkOpenCards();
         } else {
             newMatch(cardName);
         }
-
     } else {
         this.classList.remove('open', 'show');
+        emptyOpenCards();
     }
+}
+
+function checkOpenCards() {
+    if (state.openCards.length > 1 && state.openCards[0] !== state.openCards[1]) {
+        setTimeout(function(){
+            for (var i = 0; i < cards.length; i++) {
+                cards[i].classList.remove('open', 'show');
+            }
+        },500);
+
+        state.openCards = [];
+    }
+
 }
 
 function addToOpenCards(cardName) {
@@ -56,9 +71,15 @@ function newMatch(cardName) {
     var matchedCards = document.getElementsByClassName(cardName);
     for(var i = 0; i < matchedCards.length; i++) {
         matchedCards[i].parentElement.classList.add('match');
+        matchedCards[i].parentElement.classList.remove('open', 'show');
         matchedCards[i].parentElement.removeEventListener('click', clicked);
     }
+    emptyOpenCards();
 };
+
+function emptyOpenCards(){
+    state.openCards = [];
+}
 
 /*
  * set up the event listener for a card. If a card is clicked:
