@@ -3,6 +3,10 @@
  */
 var cards = document.getElementsByClassName('card');
 
+var state = {
+    openCards : []
+};
+
 for(var i = 0; i < cards.length; i++) {
     cards[i].addEventListener("click", clicked);
 }
@@ -31,19 +35,30 @@ function shuffle(array) {
 
 function clicked(){
     if (!this.classList.contains('open')) {
-        showCard();
+        var cardName = this.firstElementChild.getAttribute('class');
+        if (!state.openCards.includes(cardName)) {
+            this.classList.add('open', 'show');
+            addToOpenCards(cardName);
+        } else {
+            newMatch(cardName);
+        }
+
     } else {
-        hideCard();
+        this.classList.remove('open', 'show');
     }
 }
 
-function showCard() {
-    this.classList.add('open', 'show')
+function addToOpenCards(cardName) {
+    state.openCards.push(cardName);
 }
 
-function hideCard() {
-    this.classList.remove('open', 'show')
-}
+function newMatch(cardName) {
+    var matchedCards = document.getElementsByClassName(cardName);
+    for(var i = 0; i < matchedCards.length; i++) {
+        matchedCards[i].parentElement.classList.add('match');
+        matchedCards[i].parentElement.removeEventListener('click', clicked);
+    }
+};
 
 /*
  * set up the event listener for a card. If a card is clicked:
