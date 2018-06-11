@@ -1,8 +1,7 @@
-/*
- * Create a list that holds all of your cards
- */
+
 
 var state = {
+    deck: ['fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-leaf', 'fa-bicycle', 'fa-bomb', 'fa-diamond', 'fa-paper-plane-o', 'fa-anchor', 'fa-bolt', 'fa-cube', 'fa-leaf', 'fa-bicycle', 'fa-bomb'],
     cardElements : document.getElementsByClassName('card'),
     shuffledDeck: [],
     openCards : [],
@@ -12,16 +11,25 @@ var state = {
     numberOfStars: 3
 };
 
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
+function initBoard() {
+    var board = document.getElementById('deck');
+    while (board.firstChild) {
+        board.removeChild(board.firstChild);
+    }
 
-// Shuffle function from http://stackoverflow.com/a/2450976
-function shuffle() {
-    var array = state.cardElements;
+    shuffle(state.deck);
+
+    for(var i = 0; i < state.deck.length; i++) {
+        var newCard = document.createElement('li');
+        newCard.classList.add('card');
+        newCard.innerHTML = '<i class="fa"></i>';
+        newCard.firstElementChild.classList.add(state.deck[i]);
+        board.appendChild(newCard);
+    }
+    activateAllCards();
+};
+
+function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
     while (currentIndex !== 0) {
@@ -31,7 +39,7 @@ function shuffle() {
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
     }
-    state.shuffledDeck = array;
+    return array;
 }
 
 function clicked(){
@@ -64,18 +72,6 @@ function checkOpenCards() {
     }
 }
 
-function restart() {
-    document.getElementById('deck').innerHTML = '';
-    var html = '';
-    debugger;
-    for (var i = 0; i < state.shuffledDeck.length; i++) {
-        html += "<li class='card'><i class=";
-        html += state.shuffledDeck[i].firstElementChild.getAttribute('class');
-        html += "'></i></li>";
-    }
-    document.getElementById('deck').innerHTML = html;
-}
-
 function updateNumberOfMoves() {
     state.numberOfMoves++;
     document.getElementById('numberOfMoves').innerHTML = state.numberOfMoves;
@@ -92,8 +88,15 @@ function newMatch(cardName) {
         matchedCards[i].parentElement.classList.remove('open', 'show');
         matchedCards[i].parentElement.removeEventListener('click', clicked);
     }
+    state.numberOfMatchedCards += 2;
     emptyOpenCards();
     updateNumberOfMoves();
+    if (state.numberOfMatchedCards === state.numberOfTotalCards) {
+        setTimeout(function(){
+            alert('You won! You completed the board from '+state.numberOfMoves+' moves!');
+        },500);
+
+    }
 };
 
 function emptyOpenCards(){
@@ -115,7 +118,8 @@ function activateAllCards() {
 };
 
 
-activateAllCards();
+initBoard();
+
 //document.getElementById('restart').addEventListener('click', restart);
 
 /*
