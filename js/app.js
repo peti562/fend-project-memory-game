@@ -1,15 +1,16 @@
 /*
  * Create a list that holds all of your cards
  */
-var cards = document.getElementsByClassName('card');
 
 var state = {
-    openCards : []
+    cardElements : document.getElementsByClassName('card'),
+    shuffledDeck: [],
+    openCards : [],
+    numberOfMoves: 0,
+    numberOfTotalCards: 16,
+    numberOfMatchedCards:0,
+    numberOfStars: 3
 };
-
-for(var i = 0; i < cards.length; i++) {
-    cards[i].addEventListener("click", clicked);
-}
 
 /*
  * Display the cards on the page
@@ -19,7 +20,8 @@ for(var i = 0; i < cards.length; i++) {
  */
 
 // Shuffle function from http://stackoverflow.com/a/2450976
-function shuffle(array) {
+function shuffle() {
+    var array = state.cardElements;
     var currentIndex = array.length, temporaryValue, randomIndex;
 
     while (currentIndex !== 0) {
@@ -29,15 +31,13 @@ function shuffle(array) {
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
     }
-
-    return array;
+    state.shuffledDeck = array;
 }
 
 function clicked(){
     if (!this.classList.contains('open')) {
         var cardName = this.firstElementChild.getAttribute('class');
         if (!state.openCards.includes(cardName)) {
-            
             this.classList.add('open', 'show');
             addToOpenCards(cardName);
             checkOpenCards();
@@ -52,16 +52,34 @@ function clicked(){
 
 function checkOpenCards() {
     if (state.openCards.length > 1 && state.openCards[0] !== state.openCards[1]) {
+        inActivateAllCards();
         setTimeout(function(){
-            for (var i = 0; i < cards.length; i++) {
-                cards[i].classList.remove('open', 'show');
+            for (var i = 0; i < state.cardElements.length; i++) {
+                state.cardElements[i].classList.remove('open', 'show');
             }
+            updateNumberOfMoves();
+            activateAllCards();
         },500);
-
         state.openCards = [];
     }
-
 }
+
+function restart() {
+    document.getElementById('deck').innerHTML = '';
+    var html = '';
+    debugger;
+    for (var i = 0; i < state.shuffledDeck.length; i++) {
+        html += "<li class='card'><i class=";
+        html += state.shuffledDeck[i].firstElementChild.getAttribute('class');
+        html += "'></i></li>";
+    }
+    document.getElementById('deck').innerHTML = html;
+}
+
+function updateNumberOfMoves() {
+    state.numberOfMoves++;
+    document.getElementById('numberOfMoves').innerHTML = state.numberOfMoves;
+};
 
 function addToOpenCards(cardName) {
     state.openCards.push(cardName);
@@ -75,11 +93,30 @@ function newMatch(cardName) {
         matchedCards[i].parentElement.removeEventListener('click', clicked);
     }
     emptyOpenCards();
+    updateNumberOfMoves();
 };
 
 function emptyOpenCards(){
     state.openCards = [];
 }
+
+function inActivateAllCards() {
+    for(var i = 0; i < state.cardElements.length; i++) {
+        state.cardElements[i].removeEventListener("click", clicked);
+    }
+};
+
+function activateAllCards() {
+    for(var i = 0; i < state.cardElements.length; i++) {
+        if (!state.cardElements[i].parentElement.classList.contains('match')) {
+            state.cardElements[i].addEventListener("click", clicked);
+        }
+    }
+};
+
+
+activateAllCards();
+//document.getElementById('restart').addEventListener('click', restart);
 
 /*
  * set up the event listener for a card. If a card is clicked:
