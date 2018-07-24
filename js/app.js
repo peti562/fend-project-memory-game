@@ -8,8 +8,20 @@ var state = {
     numberOfMoves: 0,
     numberOfTotalCards: 16,
     numberOfMatchedCards:0,
-    numberOfStars: 3
+    numberOfStars: 5,
+    timerIsOn: false
 };
+
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+}
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+}
 
 function initBoard() {
     var board = document.getElementById('deck');
@@ -27,7 +39,8 @@ function initBoard() {
         board.appendChild(newCard);
     }
     activateAllCards();
-};
+    renderStars();
+}
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -43,6 +56,10 @@ function shuffle(array) {
 }
 
 function clicked(){
+    if (!state.timerIsOn) {
+        timer();
+        state.timerIsOn = true;
+    }
     if (!this.classList.contains('open')) {
         var cardName = this.firstElementChild.getAttribute('class');
         if (!state.openCards.includes(cardName)) {
@@ -65,6 +82,7 @@ function checkOpenCards() {
             for (var i = 0; i < state.cardElements.length; i++) {
                 state.cardElements[i].classList.remove('open', 'show');
             }
+            increaseNumberOfMoves();
             updateNumberOfMoves();
             activateAllCards();
         },500);
@@ -72,8 +90,12 @@ function checkOpenCards() {
     }
 }
 
-function updateNumberOfMoves() {
+function increaseNumberOfMoves() {
     state.numberOfMoves++;
+
+};
+
+function updateNumberOfMoves() {
     document.getElementById('numberOfMoves').innerHTML = state.numberOfMoves;
 };
 
@@ -90,14 +112,16 @@ function newMatch(cardName) {
     }
     state.numberOfMatchedCards += 2;
     emptyOpenCards();
+    increaseNumberOfMoves();
     updateNumberOfMoves();
     if (state.numberOfMatchedCards === state.numberOfTotalCards) {
+        clearTimeout(t);
         setTimeout(function(){
-            alert('You won! You completed the board from '+state.numberOfMoves+' moves!');
+            alert('You won! You completed the board from '+state.numberOfMoves+' moves! You have ' +state.numberOfStars + ' stars left and your time is: '+clock.textContent);
         },500);
 
     }
-};
+}
 
 function emptyOpenCards(){
     state.openCards = [];
@@ -107,7 +131,7 @@ function inActivateAllCards() {
     for(var i = 0; i < state.cardElements.length; i++) {
         state.cardElements[i].removeEventListener("click", clicked);
     }
-};
+}
 
 function activateAllCards() {
     for(var i = 0; i < state.cardElements.length; i++) {
@@ -115,8 +139,74 @@ function activateAllCards() {
             state.cardElements[i].addEventListener("click", clicked);
         }
     }
+}
+
+function reset() {
+    var cards = document.getElementsByClassName('card');
+    for(var i = 0; i < cards.length; i++) {
+        cards[i].classList.remove('match', 'open', 'show');
+    }
+    resetState();
+    activateAllCards();
+    updateNumberOfMoves();
+    clearTimer();
+    clearTimeout(t);
+}
+
+function resetState() {
+    state.numberOfMatchedCards = 0;
+    state.numberOfMoves = 0;
+    state.numberOfStars = 5;
+    state.openCards = [];
 };
 
+var clock = document.getElementById('clock'),
+    seconds = 0, minutes = 0, hours = 0,
+    t;
+
+function add() {
+    seconds++;
+    if (seconds >= 60) {
+        seconds = 0;
+        minutes++;
+        removeStar();
+        if (minutes >= 60) {
+            minutes = 0;
+            hours++;
+        }
+    }
+
+    clock.textContent = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+
+    timer();
+}
+function timer() {
+    t = setTimeout(add, 1000);
+}
+
+function clearTimer() {
+    clock.textContent = "00:00:00";
+    seconds = 0; minutes = 0; hours = 0;
+}
+
+function renderStars() {
+    var stars = state.numberOfStars;
+    for(var i = 0; i < stars; i++) {
+        addStar();
+    }
+}
+
+function addStar() {
+    var star = document.createElement('i');
+    star.classList.add('fa', 'fa-star');
+    var starWrap = document.createElement('li');
+    starWrap.appendChild(star);
+    document.getElementById('stars').appendChild(starWrap);
+};
+
+function removeStar() {
+    document.getElementById('stars').lastElementChild.remove();
+};
 
 initBoard();
 
